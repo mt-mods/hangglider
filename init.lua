@@ -152,12 +152,10 @@ hangglider.can_fly = function (pname, pos)
 			return (minetest.check_player_privs(pname, {protection_bypass=true}) or wardzones.checkPlayerZoneAccess(pname, zone) or not zone["data"]["no_fly"])
 		end
 	end
-	if areas and minetest.is_protected(vector.round(pos), pname) then
-		if hangglider.flak then
-			for id, area in pairs(areas:getAreasAtPos(pos)) do
-				if area.flak then
-					return false
-				end
+	if areas and  hangglider.flak then
+		for id, area in pairs(areas:getAreasAtPos(pos)) do
+			if area.flak then
+				return false
 			end
 		end
 	end
