@@ -153,11 +153,17 @@ hangglider.can_fly = function (pname, pos)
 				wardzones.checkPlayerZoneAccess(pname, zone) or not zone["data"]["no_fly"])
 		end
 	end
-	if areas and  hangglider.flak then
+	if areas and hangglider.flak then
+		local flak = false
+		local owners = {}
 		for _, area in pairs(areas:getAreasAtPos(pos)) do
 			if area.flak then
-				return false
+				flak = true
 			end
+			owners[area.owner] = true
+		end
+		if flak and not owners[pname] then
+			return false
 		end
 	end
 	return true
