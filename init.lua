@@ -328,8 +328,8 @@ minetest.register_tool("hangglider:hangglider", {
 	inventory_image = "glider_item.png",
 	stack_max=1,
 	on_use = function(itemstack, player)
-		if not player or (player.is_player and not player:is_player()) then
-			-- player does not exist or is created from an autometed machine (fake_player)
+		if not player or player.is_fake_player then
+			-- player does not exist or is created from an automated machine (fake_player)
 			return
 		end
 		local pos = player:get_pos()
