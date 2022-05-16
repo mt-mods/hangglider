@@ -49,7 +49,9 @@
 -- 2018-12-29
 -- Physics overrides use player_monoids mod if available
 
-
+-- Modifications by SwissalpS
+-- 2022-05-16
+-- Add Z-index to theoretically be behind hotbar and practically behind other HUDs
 
 local HUD_Overlay = true --show glider struts as overlay on HUD
 local debug = false --show debug info in top-center of hud
