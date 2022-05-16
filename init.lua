@@ -303,6 +303,7 @@ minetest.register_on_joinplayer(function(player)
 			scale = {x=-100, y=-100},
 			alignment = {x=1, y=1},
 			offset = {x=0, y=0},
+			z_index = -150
 		})
 	end
 	if debug then
