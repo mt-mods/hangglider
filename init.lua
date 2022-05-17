@@ -49,7 +49,9 @@
 -- 2018-12-29
 -- Physics overrides use player_monoids mod if available
 
-
+-- Modifications by SwissalpS
+-- 2022-05-16
+-- Add Z-index to theoretically be behind hotbar and practically behind other HUDs
 
 local HUD_Overlay = true --show glider struts as overlay on HUD
 local debug = false --show debug info in top-center of hud
@@ -61,7 +63,7 @@ end
 hangglider = {} --Make this global, so other mods can tell if hangglider exists.
 hangglider.use = {}
 if HUD_Overlay then
-hangglider.id = {}  -- hud id for displaying overlay with struts
+	hangglider.id = {}  -- hud id for displaying overlay with struts
 end
 if debug then  hangglider.debug = {} end -- hud id for debug data
 --hangglider.airbreak = {}  -- true if falling fast when equip
@@ -296,14 +298,16 @@ minetest.register_on_joinplayer(function(player)
 	})
 	hangglider.use[pname] = false
 	if HUD_Overlay then
-	hangglider.id[pname] = player:hud_add({
-		hud_elem_type = "image",
-		text = "blank.png",
-		position = {x=0, y=0},
-		scale = {x=-100, y=-100},
-		alignment = {x=1, y=1},
-		offset = {x=0, y=0}
-	}) end
+		hangglider.id[pname] = player:hud_add({
+			hud_elem_type = "image",
+			text = "blank.png",
+			position = {x=0, y=0},
+			scale = {x=-100, y=-100},
+			alignment = {x=1, y=1},
+			offset = {x=0, y=0},
+			z_index = -150
+		})
+	end
 	if debug then
 		hangglider.debug[pname] = {id = player:hud_add({hud_elem_type = "text",
 			position = {x=0.5, y=0.1},
