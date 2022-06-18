@@ -218,7 +218,7 @@ minetest.register_entity("hangglider:glider", {
 		if self.object:get_attach() then
 			local player = self.object:get_attach("parent")
 			if player then
-				local pos = player:getpos()
+				local pos = player:get_pos()
 				local pname = player:get_player_name()
 				if hangglider.use[pname] then
 					local mrn_name = minetest.registered_nodes[minetest.get_node(vector.new(pos.x, pos.y-0.5, pos.z)).name]
@@ -227,7 +227,7 @@ minetest.register_entity("hangglider:glider", {
 							canExist = true
 
 							if not minetestd then
-								step_v = player:get_player_velocity().y
+								step_v = player:get_velocity().y
 								if step_v < 0 and step_v > -3 then
 									apply_physics_override(player, {speed=math.abs(step_v/2) + 0.75})
 								elseif step_v <= -3 then --Cap our gliding movement speed.
