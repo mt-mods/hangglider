@@ -181,7 +181,7 @@ end
 
 local physics_attrs = {"jump", "speed", "gravity"}
 local function apply_physics_override(player, overrides)
-    if player_monoids then
+    if minetest.get_modpath("player_monoids") then
         for _, attr in pairs(physics_attrs) do
             if overrides[attr] then
                 player_monoids[attr]:add_change(player, overrides[attr], "hangglider:glider")
@@ -226,7 +226,7 @@ minetest.register_entity("hangglider:glider", {
 						if not (mrn_name.walkable or mrn_name.liquidtype ~= "none") then
 							canExist = true
 
-							if not minetestd then
+							if not minetest.get_modpath("minetest_systemd") then
 								step_v = player:get_velocity().y
 								if step_v < 0 and step_v > -3 then
 									apply_physics_override(player, {speed=math.abs(step_v/2) + 0.75})
@@ -260,7 +260,7 @@ minetest.register_entity("hangglider:glider", {
 				end
 				if not canExist then
 
-					if not minetestd then
+					if not minetest.get_modpath("minetest_systemd") then
 						remove_physics_override(player, {
 						gravity=1,
 						jump = 1,
