@@ -127,34 +127,8 @@ if minetest.global_exists("areas") then
 	})
 end
 
-if minetest.global_exists("minetestd") and minetestd.services.physicsctl.enabled then
-minetestd.physicsctl.register_physics_effect("hangglider",
-	function(player) -- check
-		return hangglider.use[player:get_player_name()]
-	end,
-	function(phys, player) -- blend
-		local vel_y = player:get_player_velocity().y
-		phys.gravity = phys.gravity*((vel_y + 3)/20)
-		if vel_y < 0 and vel_y > -3 then
-			phys.speed = (math.abs(vel_y/2) + 0.75)
-		elseif vel_y <= -3 then --Cap our gliding movement speed.
-			phys.speed = 2.25
-		end
-		phys.jump = 0
-	end,
-	7 -- effect order
-)
-end
-
 hangglider.can_fly = function (pname, pos)
 	-- Checks if the player will get shot down at the position
-	if wardzones then
-		local zone = wardzones.getZone(pos)
-		if zone then
-			return (minetest.check_player_privs(pname, {protection_bypass=true}) or
-				wardzones.checkPlayerZoneAccess(pname, zone) or not zone["data"]["no_fly"])
-		end
-	end
 	if areas and hangglider.flak then
 		local flak = false
 		local owners = {}
@@ -226,7 +200,6 @@ minetest.register_entity("hangglider:glider", {
 						if not (mrn_name.walkable or mrn_name.liquidtype ~= "none") then
 							canExist = true
 
-							if not minetest.get_modpath("minetest_systemd") then
 								step_v = player:get_velocity().y
 								if step_v < 0 and step_v > -3 then
 									apply_physics_override(player, {speed=math.abs(step_v/2) + 0.75})
@@ -240,7 +213,6 @@ minetest.register_entity("hangglider:glider", {
 										player:get_physics_override().gravity..', '..tostring(hangglider.airbreak[pname]))
 								end
 								apply_physics_override(player, {gravity=((step_v + 3)/20)})
-							end
 						end
 					end
 				end
@@ -260,12 +232,7 @@ minetest.register_entity("hangglider:glider", {
 				end
 				if not canExist then
 
-					if not minetest.get_modpath("minetest_systemd") then
-						remove_physics_override(player, {
-						gravity=1,
-						jump = 1,
-						speed = 1,})
-					end
+					remove_physics_override(player, { gravity=1, jump = 1, speed = 1,})
 					hangglider.use[pname] = false
 					if HUD_Overlay then
 					player:hud_change(hangglider.id[pname], "text", "blank.png")
