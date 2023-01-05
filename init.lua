@@ -53,13 +53,17 @@
 -- 2022-05-16
 -- Add Z-index to theoretically be behind hotbar and practically behind other HUDs
 
-local HUD_Overlay = true --show glider struts as overlay on HUD
-local debug = false --show debug info in top-center of hud
-hangglider = {} --Make this global, so other mods can tell if hangglider exists.
+local HUD_Overlay = true -- show glider struts as overlay on HUD
+local debug = false -- show debug info in top-center of hud
+hangglider = {} -- Make this global, so other mods can tell if hangglider exists.
 hangglider.use = {}
 
 if HUD_Overlay then
 	hangglider.id = {}  -- hud id for displaying overlay with struts
+end
+
+if debug then -- hud id for debug data
+	hangglider.debug = {} 
 end
 
 if minetest.get_modpath("areas") then
@@ -163,7 +167,7 @@ minetest.register_entity("hangglider:glider", {
 							step_v = player:get_velocity().y
 							if step_v < 0 and step_v > -3 then
 								apply_physics_override(player, {speed=math.abs(step_v/2) + 0.75})
-							elseif step_v <= -3 then --Cap our gliding movement speed.
+							elseif step_v <= -3 then -- Cap our gliding movement speed.
 								apply_physics_override(player, {speed=2.25})
 							else
 								remove_physics_override(player, {speed=1})
