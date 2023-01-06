@@ -79,7 +79,7 @@ if minetest.get_modpath("areas") then
 			end
 
 			if not areas:isAreaOwner(id, name) then
-				return false, "Area "..id.." does not exist".." or is not owned by you."
+				return false, "Area "..id.." does not exist or is not owned by you."
 			end
 			local open = not areas.areas[id].flak
 			-- Save false as nil to avoid inflating the DB.
@@ -267,10 +267,7 @@ minetest.register_tool("hangglider:hangglider", {
 		if not hangglider.use[pname] then -- Equip
 			minetest.sound_play("bedsheet", {pos = pos, max_hear_distance = 8, gain = 1.0}, true)
 			if HUD_Overlay then player:hud_change(hangglider.id[pname], "text", "glider_struts.png") end
-			local airbreak = false
-			if not airbreak then
-				minetest.add_entity(pos, "hangglider:glider"):set_attach(player, "", {x=0,y=10,z=0}, {x=0,y=0,z=0})
-			end
+			minetest.add_entity(pos, "hangglider:glider"):set_attach(player, "", {x=0,y=10,z=0}, {x=0,y=0,z=0})
 			hangglider.use[pname] = true
 			apply_physics_override(player, {jump = 0})
 			itemstack:set_wear(itemstack:get_wear() + 255)
