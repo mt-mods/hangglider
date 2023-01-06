@@ -9,7 +9,5 @@ read_globals = {
 	"vector", "ItemStack",
 
 	-- Mod deps
-	"wardzones",
-	"minetestd",
 	"player_monoids"
 }
