@@ -63,7 +63,7 @@ if HUD_Overlay then
 end
 
 if debug then -- hud id for debug data
-	hangglider.debug = {} 
+	hangglider.debug = {}
 end
 
 if minetest.get_modpath("areas") then
@@ -166,17 +166,17 @@ minetest.register_entity("hangglider:glider", {
 							canExist = true
 							step_v = player:get_velocity().y
 							if step_v < 0 and step_v > -3 then
-								apply_physics_override(player, {speed=math.abs(step_v/2) + 0.75})
+								apply_physics_override(player, {speed = math.abs(step_v/2) + 0.75})
 							elseif step_v <= -3 then -- Cap our gliding movement speed.
-								apply_physics_override(player, {speed=2.25})
+								apply_physics_override(player, {speed = 2.25})
 							else
-								remove_physics_override(player, {speed=1})
+								remove_physics_override(player, {speed = 1})
 							end
 							if debug then
 								player:hud_change(hangglider.debug[pname].id, "text", step_v..', '..
 									player:get_physics_override().gravity..', '..tostring(hangglider.airbreak[pname]))
 							end
-							apply_physics_override(player, {gravity=((step_v + 3)/20)})
+							apply_physics_override(player, {gravity = ((step_v + 3)/20)})
 						end
 					end
 				end
@@ -229,16 +229,16 @@ minetest.register_on_joinplayer(function(player)
 		hangglider.id[pname] = player:hud_add({
 			hud_elem_type = "image",
 			text = "blank.png",
-			position = {x=0, y=0},
-			scale = {x=-100, y=-100},
-			alignment = {x=1, y=1},
-			offset = {x=0, y=0},
+			position = {x = 0, y = 0},
+			scale = {x = -100, y = -100},
+			alignment = {x = 1, y = 1},
+			offset = {x = 0, y = 0},
 			z_index = -150
 		})
 	end
 	if debug then
 		hangglider.debug[pname] = {id = player:hud_add({hud_elem_type = "text",
-			position = {x=0.5, y=0.1},
+			position = {x = 0.5, y= 0.1 },
 			text = "-",
 			number = 0xFF0000}),  -- red text
 			-- ht = {50,50,50},
@@ -264,8 +264,8 @@ minetest.register_tool("hangglider:hangglider", {
 		end
 		local pos = player:get_pos()
 		local pname = player:get_player_name()
-		if not hangglider.use[pname] then --Equip
-			minetest.sound_play("bedsheet", {pos=pos, max_hear_distance = 8, gain = 1.0}, true)
+		if not hangglider.use[pname] then -- Equip
+			minetest.sound_play("bedsheet", {pos = pos, max_hear_distance = 8, gain = 1.0}, true)
 			if HUD_Overlay then player:hud_change(hangglider.id[pname], "text", "glider_struts.png") end
 			local airbreak = false
 			if not airbreak then
@@ -275,7 +275,7 @@ minetest.register_tool("hangglider:hangglider", {
 			apply_physics_override(player, {jump = 0})
 			itemstack:set_wear(itemstack:get_wear() + 255)
 			return itemstack
-		elseif hangglider.use[pname] then --Unequip
+		elseif hangglider.use[pname] then -- Unequip
 			if HUD_Overlay then player:hud_change(hangglider.id[pname], "text", "default_wood.png^[colorize:#0000:255") end
 			hangglider.use[pname] = false
 		end
