@@ -120,6 +120,10 @@ local has_player_monoids = minetest.get_modpath("player_monoids")
 
 local physics_attrs = {"jump", "speed", "gravity"}
 local function apply_physics_override(player, overrides)
+	-- prevent flys to the world border
+	if overrides.gravity and overrides.gravity < 0 then
+		overrides.gravity = 0
+	end
     if has_player_monoids then
         for _, attr in pairs(physics_attrs) do
             if overrides[attr] then
@@ -174,7 +178,7 @@ minetest.register_entity("hangglider:glider", {
 							end
 							if debug then
 								player:hud_change(hangglider.debug[pname].id, "text", step_v..', '..
-									player:get_physics_override().gravity..', '..tostring(hangglider.airbreak[pname]))
+									player:get_physics_override().gravity)
 							end
 							apply_physics_override(player, {gravity = ((step_v + 3)/20)})
 						end
