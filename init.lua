@@ -125,27 +125,27 @@ local function apply_physics_override(player, overrides)
 	if overrides.gravity and overrides.gravity < 0 then
 		overrides.gravity = 0
 	end
-    if has_player_monoids then
-        for _, attr in pairs(physics_attrs) do
-            if overrides[attr] then
-                player_monoids[attr]:add_change(player, overrides[attr], "hangglider:glider")
-            end
-        end
-    else
-        player:set_physics_override(overrides)
-    end
+	if has_player_monoids then
+		for _, attr in pairs(physics_attrs) do
+			if overrides[attr] then
+				player_monoids[attr]:add_change(player, overrides[attr], "hangglider:glider")
+			end
+		end
+	else
+		player:set_physics_override(overrides)
+	end
 end
 
 local function remove_physics_override(player, overrides)
-    for _, attr in pairs(physics_attrs) do
-        if overrides[attr] then
-            if has_player_monoids then
-                player_monoids[attr]:del_change(player, "hangglider:glider")
-            else
-                player:set_physics_override({[attr] = 1})
-            end
-        end
-    end
+	for _, attr in pairs(physics_attrs) do
+		if overrides[attr] then
+			if has_player_monoids then
+				player_monoids[attr]:del_change(player, "hangglider:glider")
+			else
+				player:set_physics_override({[attr] = 1})
+			end
+		end
+	end
 end
 
 local step_v
@@ -186,19 +186,19 @@ minetest.register_entity("hangglider:glider", {
 					end
 				end
 				if not hangglider.can_fly(pname,pos) then
-				    if not self.warned then -- warning shot
+					if not self.warned then -- warning shot
 						self.warned = 0
 						hangglider.shot_sound(pos)
 						minetest.chat_send_player(pname, "Protected area! You will be shot down in " ..
 							warning_time .. " seconds by anti-aircraft guns!")
-				    end
-				    self.warned = self.warned + dtime
-				    if self.warned > warning_time then -- shoot down
+					end
+					self.warned = self.warned + dtime
+					if self.warned > warning_time then -- shoot down
 						player:set_hp(1)
 						player:get_inventory():remove_item("main", ItemStack("hangglider:hangglider"))
 						hangglider.shot_sound(pos)
 						canExist = false
-				    end
+					end
 				end
 				if not canExist then
 					remove_physics_override(player, {gravity = 1, jump = 1, speed = 1})
