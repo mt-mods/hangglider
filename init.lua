@@ -55,6 +55,7 @@
 
 local HUD_Overlay = true -- show glider struts as overlay on HUD
 local debug = false -- show debug info in top-center of hud
+local warning_time = tonumber(minetest.settings:get("hangglider.flak_warning_time")) or 2
 hangglider = {} -- Make this global, so other mods can tell if hangglider exists.
 hangglider.use = {}
 
@@ -188,10 +189,11 @@ minetest.register_entity("hangglider:glider", {
 				    if not self.warned then -- warning shot
 						self.warned = 0
 						hangglider.shot_sound(pos)
-						minetest.chat_send_player(pname, "Protected area! You will be shot down in two seconds by anti-aircraft guns!")
+						minetest.chat_send_player(pname, "Protected area! You will be shot down in " ..
+							warning_time .. " seconds by anti-aircraft guns!")
 				    end
 				    self.warned = self.warned + dtime
-				    if self.warned > 2 then -- shoot down
+				    if self.warned > warning_time then -- shoot down
 						player:set_hp(1)
 						player:get_inventory():remove_item("main", ItemStack("hangglider:hangglider"))
 						hangglider.shot_sound(pos)
