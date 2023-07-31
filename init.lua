@@ -120,11 +120,8 @@ end
 local has_player_monoids = minetest.get_modpath("player_monoids")
 
 local physics_attrs = {"jump", "speed", "gravity"}
+
 local function apply_physics_override(player, overrides)
-	-- prevent flys to the world border
-	if overrides.gravity and overrides.gravity < 0 then
-		overrides.gravity = 0
-	end
 	if has_player_monoids then
 		for _, attr in pairs(physics_attrs) do
 			if overrides[attr] then
@@ -148,7 +145,6 @@ local function remove_physics_override(player, overrides)
 	end
 end
 
-local step_v
 minetest.register_entity("hangglider:glider", {
 	visual = "mesh",
 	visual_size = {x = 12, y = 12},
@@ -158,6 +154,7 @@ minetest.register_entity("hangglider:glider", {
 	static_save = false,
 	textures = {"wool_white.png", "default_wood.png"},
 	on_step = function(self, dtime)
+		local step_v
 		local canExist = false
 		if self.object:get_attach() then
 			local player = self.object:get_attach("parent")
