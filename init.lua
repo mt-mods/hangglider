@@ -129,9 +129,12 @@ local function hangglider_step(self, dtime)
 				elseif vel <= -3 then
 					set_physics_overrides(player, {
 						speed = 2.5,
-						gravity = -0.25,
+						gravity = -0.1,
 					})
-					player:add_velocity(vector.new(0, 1, 0))
+					if vel < -5 then
+						-- Extra airbrake when falling too fast
+						player:add_velocity(vector.new(0, math.min(5, math.abs(vel / 10.0)), 0))
+					end
 				else  -- vel > 0
 					set_physics_overrides(player, {
 						speed = 1.0,
