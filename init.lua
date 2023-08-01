@@ -120,11 +120,8 @@ end
 local has_player_monoids = minetest.get_modpath("player_monoids")
 
 local physics_attrs = {"jump", "speed", "gravity"}
+
 local function apply_physics_override(player, overrides)
-	-- prevent flys to the world border
-	if overrides.gravity and overrides.gravity < 0 then
-		overrides.gravity = 0
-	end
 	if has_player_monoids then
 		for _, attr in pairs(physics_attrs) do
 			if overrides[attr] then
@@ -148,7 +145,6 @@ local function remove_physics_override(player, overrides)
 	end
 end
 
-local step_v
 minetest.register_entity("hangglider:glider", {
 	visual = "mesh",
 	visual_size = {x = 12, y = 12},
@@ -169,7 +165,7 @@ minetest.register_entity("hangglider:glider", {
 					if mrn_name then
 						if not (mrn_name.walkable or mrn_name.liquidtype ~= "none") then
 							canExist = true
-							step_v = player:get_velocity().y
+							local step_v = player:get_velocity().y
 							if step_v < 0 and step_v > -3 then
 								apply_physics_override(player, {speed = math.abs(step_v/2) + 0.75})
 							elseif step_v <= -3 then -- Cap our gliding movement speed.
