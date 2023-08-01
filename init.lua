@@ -154,7 +154,6 @@ minetest.register_entity("hangglider:glider", {
 	static_save = false,
 	textures = {"wool_white.png", "default_wood.png"},
 	on_step = function(self, dtime)
-		local step_v
 		local canExist = false
 		if self.object:get_attach() then
 			local player = self.object:get_attach("parent")
@@ -166,7 +165,7 @@ minetest.register_entity("hangglider:glider", {
 					if mrn_name then
 						if not (mrn_name.walkable or mrn_name.liquidtype ~= "none") then
 							canExist = true
-							step_v = player:get_velocity().y
+							local step_v = player:get_velocity().y
 							if step_v < 0 and step_v > -3 then
 								apply_physics_override(player, {speed = math.abs(step_v/2) + 0.75})
 							elseif step_v <= -3 then -- Cap our gliding movement speed.
