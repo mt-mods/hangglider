@@ -17,9 +17,17 @@ While deployed you can glide around just like walking in the air. Your decent wi
 
 ## Coloring
 
-You can color the hang glider by crafting it with any dye. Note the color will only be visible on the item if you are using Minetest 5.8.0 or above.
+You can color the hang glider by crafting it with any dye. Also supports all `unifieddyes` colors.
+
+Note that the color will only be visible on the item if you are using Minetest 5.8.0 or above.
 
 
 ## Repairing
 
 The hang glider will wear out every time you use it. The hang glider can be repaired by crafting it with wool or paper, or any other method used to repair tools.
+
+## Area Flak
+
+If the `areas` mod is installed, airspace restrictions can be added to areas using the `/area_flak` command.
+
+When using a hang glider in an area with flak enabled, you will get shot down a few seconds after entering the area, this reduces your HP to 1 and destroys your hang glider.
