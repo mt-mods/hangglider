@@ -181,6 +181,12 @@ local function hangglider_use(stack, player)
 		local entity = minetest.add_entity(pos, "hangglider:glider")
 		if entity then
 			entity:set_attach(player, "", vector.new(0, 10, 0), vector.new(0, 0, 0))
+			local color = stack:get_meta():get("hangglider_color")
+			if color then
+				entity:set_properties({
+					textures = {"wool_white.png^[multiply:#"..color, "default_wood.png"}
+				})
+			end
 			set_hud_overlay(player, name, "hangglider_overlay.png")
 			set_physics_overrides(player, {jump = 0, gravity = 0.25})
 			hanggliding_players[name] = true
@@ -236,27 +242,4 @@ minetest.register_tool("hangglider:hangglider", {
 	on_use = hangglider_use,
 })
 
-minetest.register_craft({
-	output = "hangglider:hangglider",
-	recipe = {
-		{"default:paper", "default:paper", "default:paper"},
-		{"default:paper", "hangglider:hangglider", "default:paper"},
-		{"default:paper", "default:paper", "default:paper"},
-	},
-})
-
-minetest.register_craft({
-	output = "hangglider:hangglider",
-	recipe = {
-		{"hangglider:hangglider", "wool:white"},
-	},
-})
-
-minetest.register_craft({
-	output = "hangglider:hangglider",
-	recipe = {
-		{"wool:white", "wool:white", "wool:white"},
-		{"default:stick", "", "default:stick"},
-		{"", "default:stick", ""},
-	}
-})
+dofile(minetest.get_modpath("hangglider").."/crafts.lua")

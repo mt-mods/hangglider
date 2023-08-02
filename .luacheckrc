@@ -7,4 +7,5 @@ read_globals = {
 	"vector", "ItemStack",
 
 	"player_monoids",
+	"unifieddyes",
 }
