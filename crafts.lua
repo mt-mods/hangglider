@@ -1,31 +1,36 @@
 
-local get_dye_color
-if minetest.get_modpath("unifieddyes") then
-	get_dye_color = unifieddyes.get_color_from_dye_name
-else
-	local colors = {
-		white      = "ffffff",
-		grey       = "888888",
-		dark_grey  = "444444",
-		black      = "111111",
-		violet     = "8000ff",
-		blue       = "0000ff",
-		cyan       = "00ffff",
-		dark_green = "005900",
-		green      = "00ff00",
-		yellow     = "ffff00",
-		brown      = "592c00",
-		orange     = "ff7f00",
-		red        = "ff0000",
-		magenta    = "ff00ff",
-		pink       = "ff7f9f",
-	}
-	get_dye_color = function(name)
-		local color = string.match(name, "^dye:(%w+)$")
+local has_unifieddyes = minetest.get_modpath("unifieddyes")
+
+local dye_colors = {
+	white      = "ffffff",
+	grey       = "888888",
+	dark_grey  = "444444",
+	black      = "111111",
+	violet     = "8000ff",
+	blue       = "0000ff",
+	cyan       = "00ffff",
+	dark_green = "005900",
+	green      = "00ff00",
+	yellow     = "ffff00",
+	brown      = "592c00",
+	orange     = "ff7f00",
+	red        = "ff0000",
+	magenta    = "ff00ff",
+	pink       = "ff7f9f",
+}
+
+local function get_dye_color(name)
+	local color
+	if has_unifieddyes then
+		color = unifieddyes.get_color_from_dye_name(name)
+	end
+	if not color then
+		color = string.match(name, "^dye:(%w+)$")
 		if color then
-			return colors[color]
+			color = dye_colors[color]
 		end
 	end
+	return color
 end
 
 local function get_color_name(name)
