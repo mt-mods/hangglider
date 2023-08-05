@@ -25,7 +25,7 @@ local function get_dye_color(name)
 		color = unifieddyes.get_color_from_dye_name(name)
 	end
 	if not color then
-		color = string.match(name, "^dye:(%w+)$")
+		color = string.match(name, "^dye:(.+)$")
 		if color then
 			color = dye_colors[color]
 		end
