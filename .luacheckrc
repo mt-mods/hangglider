@@ -1,5 +1,6 @@
 globals = {
 	"areas",
+	"hangglider",
 }
 
 read_globals = {

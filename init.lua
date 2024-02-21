@@ -1,3 +1,4 @@
+hangglider = {}
 
 local has_player_monoids = minetest.get_modpath("player_monoids")
 local has_areas = minetest.get_modpath("areas")
@@ -73,20 +74,34 @@ local function remove_physics_overrides(player)
 	end
 end
 
-local function can_fly(pos, name)
-	if not enable_flak then
-		return true
-	end
-	local flak = false
-	local owners = {}
-	for _, area in pairs(areas:getAreasAtPos(pos)) do
-		if area.flak then
-			flak = true
+local fly_checks = {}
+
+function hangglider.add_fly_check(func)
+	table.insert(fly_checks, func)
+end
+
+local function can_fly(name, pos)
+	-- Area flak check
+	if enable_flak then
+		local flak = false
+		local owners = {}
+		for _, area in pairs(areas:getAreasAtPos(pos)) do
+			if area.flak then
+				flak = true
+			end
+			owners[area.owner] = true
 		end
-		owners[area.owner] = true
+		if flak and not owners[name] then
+			return false
+		end
 	end
-	if flak and not owners[name] then
-		return false
+
+	-- Custom checks set by other mods
+	for _, func in ipairs(fly_checks) do
+		local ret = func(name, pos)
+		if ret == false then
+			return false
+		end
 	end
 	return true
 end
@@ -142,7 +157,7 @@ local function hangglider_step(self, dtime)
 					})
 				end
 			end
-			if not can_fly(pos, name) then
+			if not can_fly(name, pos) then
 				if not self.flak_timer then
 					self.flak_timer = 0
 					shoot_flak_sound(pos)
