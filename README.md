@@ -31,3 +31,17 @@ The hang glider will wear out every time you use it. The hang glider can be repa
 If the `areas` mod is installed, airspace restrictions can be added to areas using the `/area_flak` command.
 
 When using a hang glider in an area with flak enabled, you will get shot down a few seconds after entering the area, this reduces your HP to 1 and destroys your hang glider.
+
+## API
+
+#### Custom "can fly" checks
+
+```lua
+hangglider.add_fly_check(function(name, player)
+	-- `name` is the playername
+	-- `player` is the PlayerRef
+	-- Add your code here
+	-- Must return `true` (can fly) or `false` (can't fly)
+	return true
+end)
+```
