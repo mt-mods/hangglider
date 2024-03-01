@@ -37,7 +37,9 @@ When using a hang glider in an area with flak enabled, you will get shot down a 
 #### Custom "can fly" checks
 
 ```lua
-hangglider.add_fly_check(function(name, pos)
+hangglider.add_fly_check(function(name, player)
+	-- `name` is the playername
+	-- `player` is the PlayerRef
 	-- Add your code here
 	-- Must return `true` (can fly) or `false` (can't fly)
 	return true

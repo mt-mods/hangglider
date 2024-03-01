@@ -80,7 +80,7 @@ function hangglider.add_fly_check(func)
 	table.insert(fly_checks, func)
 end
 
-local function can_fly(name, pos)
+local function can_fly_area(name, pos)
 	-- Area flak check
 	if enable_flak then
 		local flak = false
@@ -95,10 +95,12 @@ local function can_fly(name, pos)
 			return false
 		end
 	end
+end
 
+local function can_fly_custom(name, player)
 	-- Custom checks set by other mods
 	for _, func in ipairs(fly_checks) do
-		local ret = func(name, pos)
+		local ret = func(name, player)
 		if ret == false then
 			return false
 		end
@@ -157,7 +159,7 @@ local function hangglider_step(self, dtime)
 					})
 				end
 			end
-			if not can_fly(name, pos) then
+			if not can_fly_area(name, pos) then
 				if not self.flak_timer then
 					self.flak_timer = 0
 					shoot_flak_sound(pos)
@@ -171,6 +173,9 @@ local function hangglider_step(self, dtime)
 					shoot_flak_sound(pos)
 					gliding = false
 				end
+			end
+			if not can_fly_custom(name, player) then
+				gliding = false
 			end
 			if not gliding then
 				remove_physics_overrides(player)
