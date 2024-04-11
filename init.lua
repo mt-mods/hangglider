@@ -190,7 +190,7 @@ local function hangglider_use(stack, player)
 	local pos = player:get_pos()
 	local name = player:get_player_name()
 	if not hanggliding_players[name] then
-		if not hangglider.allowed_to_fly(pos, name, false)
+		if not hangglider.allowed_to_fly(pos, name, false) then
 			return
 		end
 		minetest.sound_play("hanggliger_equip", {pos = pos, max_hear_distance = 8, gain = 1.0}, true)
