@@ -84,7 +84,7 @@ function hangglider.allowed_to_fly(pos, name, in_flight) --luacheck: no unused a
 	return true
 end
 
-local function can_fly(pos, name)
+local function friendly_airspace(pos, name)
 	if not enable_flak then
 		return true
 	end
@@ -153,7 +153,7 @@ local function hangglider_step(self, dtime)
 					})
 				end
 			end
-			if not can_fly(pos, name) then
+			if not friendly_airspace(pos, name) then
 				if not self.flak_timer then
 					self.flak_timer = 0
 					shoot_flak_sound(pos)
