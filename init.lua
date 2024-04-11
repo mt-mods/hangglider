@@ -1,3 +1,4 @@
+hangglider = {}
 
 local has_player_monoids = minetest.get_modpath("player_monoids")
 local has_areas = minetest.get_modpath("areas")
@@ -71,6 +72,16 @@ local function remove_physics_overrides(player)
 			player:set_physics_override({[name] = 1})
 		end
 	end
+end
+
+-- expose so other mods can override/hook-into
+-- to disallow flying in certain areas or materials
+-- such as on the moon or without priv in certain area
+-- pos: (vector) position of player
+-- name: (string) player's name
+-- in_flight: (bool) is already airborne
+function hangglider.allowed_to_fly(pos, name, in_flight) --luacheck: no unused args
+	return true
 end
 
 local function can_fly(pos, name)
@@ -156,6 +167,8 @@ local function hangglider_step(self, dtime)
 					shoot_flak_sound(pos)
 					gliding = false
 				end
+			elseif not hangglider.allowed_to_fly(pos, name, true) then
+				gliding = false
 			end
 			if not gliding then
 				remove_physics_overrides(player)
@@ -177,6 +190,9 @@ local function hangglider_use(stack, player)
 	local pos = player:get_pos()
 	local name = player:get_player_name()
 	if not hanggliding_players[name] then
+		if not hangglider.allowed_to_fly(pos, name, false)
+			return
+		end
 		minetest.sound_play("hanggliger_equip", {pos = pos, max_hear_distance = 8, gain = 1.0}, true)
 		local entity = minetest.add_entity(pos, "hangglider:glider")
 		if entity then
