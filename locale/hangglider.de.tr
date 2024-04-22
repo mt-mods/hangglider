@@ -1,0 +1,28 @@
+# textdomain: hangglider
+white=Weisser
+grey=Grauer
+dark_grey=Dunkelgrauer
+black=Schwarzer
+violet=Violeter
+blue=Blauer
+cyan=Cyan farbener
+dark_green=Dunkelgrüner
+green=Grüner
+yellow=Gelber
+brown=Brauner
+orange=Orange farbener
+red=Roter
+magenta=Magenta farbener
+pink=Rosa
+Colored Glider=Farbiger Gleitschirm
+@1 Glider=@1 Gleitschirm
+You have entered restricted airspace!@@You will be shot down in @1 seconds by anti-aircraft guns!=Du bist in eingeschränktem Luftraum eingedrungen!@nDu wirst in @1 Sekunden von FLAK abgeschossen.
+<ID>=
+Toggle airspace restrictions for area <ID>.=Luftraumbeschränkungen für Gebiet <ID> umschalten.
+Invalid usage, see /help area_flak.=Ungültige Verwendung, siehe /help area_flak.=
+Area @1 does not exist or is not owned by you.=Gebiet @1 existiert nicht oder es gehört dir nicht.
+Area @1 airspace is @2.=Gebiet @1 Luftraum ist @2.
+closed=eingeschränkt
+opened=geöffnet
+Glider=Gleitschirm
+
