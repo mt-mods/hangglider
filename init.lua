@@ -6,6 +6,14 @@ local S = hangglider.translator
 
 local has_player_monoids = minetest.get_modpath("player_monoids")
 local has_areas = minetest.get_modpath("areas")
+local has_priv_protector = minetest.get_modpath("priv_protector")
+	and minetest.global_exists("priv_protector")
+	and priv_protector.get_area_priv
+-- older versions of priv_protector and xp_redo don't have
+-- the global and/or the functions yet
+local has_xp_redo = minetest.get_modpath("xp_redo")
+	and minetest.global_exists("xp_redo")
+	and xp_redo.get_area_xp_limits and xp_redo.get_xp
 
 local enable_hud_overlay = minetest.settings:get_bool("hangglider.enable_hud_overlay", true)
 local enable_flak = has_areas and minetest.settings:get_bool("hangglider.enable_flak", true)
@@ -80,22 +88,59 @@ local function remove_physics_overrides(player)
 	end
 end
 
-local function can_fly(pos, name)
+local function can_fly(pos, name, player_xp, player_privs)
 	if not enable_flak then
 		return true
 	end
-	local flak = false
+
+	local flak, open = false, false
+	local priv_excemption, xp_limit = false, false
+	local xp_area, priv_area
 	local owners = {}
-	for _, area in pairs(areas:getAreasAtPos(pos)) do
+	for id, area in pairs(areas:getAreasAtPos(pos)) do
+		-- open areas are friendly airspace(?)
+		if area.open then
+			open = true
+		end
+		if player_privs then
+			priv_area = priv_protector.get_area_priv(id)
+			if player_privs[priv_area] then
+				priv_excemption = true
+			end
+		end
+		if player_xp then
+			xp_area = xp_redo.get_area_xp_limits(id)
+			if xp_area then
+				if (xp_area.min and player_xp < xp_area.min)
+					or (xp_area.max and player_xp > xp_area.max)
+				then
+					xp_limit = true
+				end
+			end
+		end
 		if area.flak then
 			flak = true
 		end
 		owners[area.owner] = true
 	end
-	if flak and not owners[name] then
-		return false
+	-- none of the areas has FLAK set -> friendly
+	-- any of the overlapping areas is open -> friendly
+	-- owners of overlapping areas -> safe
+	if not flak or open or owners[name] then
+		return true
 	end
-	return true
+
+	-- privilaged players -> safe
+	if player_privs and priv_excemption then
+		return true
+	end
+
+	-- xp limits -> unfriendly
+	if player_xp and not xp_limit then
+		return true
+	end
+
+	return false
 end
 
 local function safe_node_below(pos)
@@ -149,7 +194,7 @@ local function hangglider_step(self, dtime)
 					})
 				end
 			end
-			if not can_fly(pos, name) then
+			if not can_fly(pos, name, self.xp, self.privs) then
 				if not self.flak_timer then
 					self.flak_timer = 0
 					shoot_flak_sound(pos)
@@ -196,6 +241,13 @@ local function hangglider_use(stack, player)
 			end
 			set_hud_overlay(player, name, "hangglider_overlay.png")
 			set_physics_overrides(player, {jump = 0, gravity = 0.25})
+			local luaentity = entity:get_luaentity()
+			if has_xp_redo then
+				luaentity.xp = xp_redo.get_xp(name)
+			end
+			if has_priv_protector then
+				luaentity.privs = minetest.get_player_privs(name)
+			end
 			hanggliding_players[name] = true
 			if hangglider_uses > 0 then
 				stack:add_wear(65535 / hangglider_uses)
