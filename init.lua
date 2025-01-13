@@ -5,6 +5,7 @@ hangglider = {
 local S = hangglider.translator
 
 local has_player_monoids = minetest.get_modpath("player_monoids")
+local has_pova = minetest.get_modpath("pova")
 local has_areas = minetest.get_modpath("areas")
 
 local enable_hud_overlay = minetest.settings:get_bool("hangglider.enable_hud_overlay", true)
@@ -65,6 +66,10 @@ local function set_physics_overrides(player, overrides)
 		for name, value in pairs(overrides) do
 			player_monoids[name]:add_change(player, value, "hangglider:glider")
 		end
+	elseif has_pova then
+		pova.add_override(player:get_player_name(), "hangglider:glider",
+				{jump = 0, speed = overrides.speed, gravity = overrides.gravity})
+		pova.do_override(player)
 	else
 		player:set_physics_override(overrides)
 	end
@@ -75,6 +80,9 @@ local function remove_physics_overrides(player)
 		for _, name in pairs({"jump", "speed", "gravity"}) do
 			player_monoids[name]:del_change(player, "hangglider:glider")
 		end
+	elseif has_pova then
+		pova.del_override(player:get_player_name(), "hangglider:glider")
+		pova.do_override(player)
 	else
 		player:set_physics_override({jump = 1, speed = 1, gravity = 1})
 	end
