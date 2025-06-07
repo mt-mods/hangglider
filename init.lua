@@ -44,6 +44,12 @@ if enable_flak then
 	})
 end
 
+local function is_gliding(player) then
+	return hanggliding_players[player:get_player_name()]
+end
+
+hangglider.is_gliding = is_gliding
+
 local function set_hud_overlay(player, name, show)
 	if not enable_hud_overlay then
 		return
