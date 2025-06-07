@@ -45,8 +45,8 @@ if enable_flak then
 end
 
 hangglider.is_gliding = function(player)
-	if not player then 
-		return false 
+	if not player then
+		return false
 	end
 	return hanggliding_players[player:get_player_name()]
 end
@@ -82,32 +82,32 @@ local function set_physics_overrides(player, overrides)
 				{jump = 0, speed = overrides.speed, gravity = overrides.gravity})
 		pova.do_override(player)
 	else
-    		local def = player:get_physics_override()
-    		-- Store original only once (when glider is equipped)
-    		if not stored_physics[player_name] then
-        		stored_physics[player_name] = {
-            			speed = def.speed,
-            			jump = def.jump,
-            			gravity = def.gravity,
-        		}
-        		applied_deltas[player_name] = {speed = 0, jump = 0, gravity = 0}
-    		end
-    		-- Compute the new delta to apply (relative to current physics)
-    		local delta = {
-        		speed = (overrides.speed or def.speed) - def.speed,
-        		jump = (overrides.jump or def.jump) - def.jump,
-        		gravity = (overrides.gravity or def.gravity) - def.gravity,
-    		}
-    		-- Track the sum of all deltas for this session.
-    		applied_deltas[player_name].speed = applied_deltas[player_name].speed + delta.speed
-    		applied_deltas[player_name].jump = applied_deltas[player_name].jump + delta.jump
-    		applied_deltas[player_name].gravity = applied_deltas[player_name].gravity + delta.gravity
-    		-- Apply new delta on top of current physics
-    		player:set_physics_override({
-        		speed = def.speed + delta.speed,
-        		jump = def.jump + delta.jump,
-        		gravity = def.gravity + delta.gravity,
-    		})
+		local def = player:get_physics_override()
+		-- Store original only once (when glider is equipped)
+		if not stored_physics[player_name] then
+			stored_physics[player_name] = {
+				speed = def.speed,
+				jump = def.jump,
+				gravity = def.gravity,
+		}
+			applied_deltas[player_name] = {speed = 0, jump = 0, gravity = 0}
+		end
+		-- Compute the new delta to apply (relative to current physics)
+		local delta = {
+			speed = (overrides.speed or def.speed) - def.speed,
+			jump = (overrides.jump or def.jump) - def.jump,
+			gravity = (overrides.gravity or def.gravity) - def.gravity,
+		}
+		-- Track the sum of all deltas for this session.
+		applied_deltas[player_name].speed = applied_deltas[player_name].speed + delta.speed
+		applied_deltas[player_name].jump = applied_deltas[player_name].jump + delta.jump
+		applied_deltas[player_name].gravity = applied_deltas[player_name].gravity + delta.gravity
+		-- Apply new delta on top of current physics
+		player:set_physics_override({
+			speed = def.speed + delta.speed,
+			jump = def.jump + delta.jump,
+			gravity = def.gravity + delta.gravity,
+		})
 	end
 end
 
@@ -122,18 +122,18 @@ local function remove_physics_overrides(player)
 		pova.do_override(player)
 	else
 		local def = player:get_physics_override()
-    		if stored_physics[player_name] and applied_deltas[player_name] then
-        		-- Subtract total delta from current values
-        		player:set_physics_override({
+		if stored_physics[player_name] and applied_deltas[player_name] then
+			-- Subtract total delta from current values
+			player:set_physics_override({
             			speed = def.speed - applied_deltas[player_name].speed,
             			jump = def.jump - applied_deltas[player_name].jump,
             			gravity = def.gravity - applied_deltas[player_name].gravity,
-        		})
-        		stored_physics[player_name] = nil
-        		applied_deltas[player_name] = nil
-    		else
-        		player:set_physics_override({speed = 1, jump = 1, gravity = 1})
-    		end
+			})
+			stored_physics[player_name] = nil
+			applied_deltas[player_name] = nil
+		else
+			player:set_physics_override({speed = 1, jump = 1, gravity = 1})
+		end
 	end
 end
 local function can_fly(pos, name)
