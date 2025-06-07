@@ -1,17 +1,17 @@
 
 hangglider = {
-	translator = core.get_translator('hangglider'),
+	translator = minetest.get_translator('hangglider'),
 }
 local S = hangglider.translator
 
-local has_player_monoids = core.get_modpath("player_monoids")
-local has_pova = core.get_modpath("pova")
-local has_areas = core.get_modpath("areas")
+local has_player_monoids = minetest.get_modpath("player_monoids")
+local has_pova = minetest.get_modpath("pova")
+local has_areas = minetest.get_modpath("areas")
 
-local enable_hud_overlay = core.settings:get_bool("hangglider.enable_hud_overlay", true)
-local enable_flak = has_areas and core.settings:get_bool("hangglider.enable_flak", true)
-local flak_warning_time = tonumber(core.settings:get("hangglider.flak_warning_time")) or 2
-local hangglider_uses = tonumber(core.settings:get("hangglider.uses")) or 250
+local enable_hud_overlay = minetest.settings:get_bool("hangglider.enable_hud_overlay", true)
+local enable_flak = has_areas and minetest.settings:get_bool("hangglider.enable_flak", true)
+local flak_warning_time = tonumber(minetest.settings:get("hangglider.flak_warning_time")) or 2
+local hangglider_uses = tonumber(minetest.settings:get("hangglider.uses")) or 250
 
 local flak_warning = S("You have entered restricted airspace!@n"
 	.. "You will be shot down in @1 seconds by anti-aircraft guns!",
@@ -24,7 +24,7 @@ local hud_overlay_ids = {}
 
 
 if enable_flak then
-	core.register_chatcommand("area_flak", {
+	minetest.register_chatcommand("area_flak", {
 		params = S("<ID>"),
 		description = S("Toggle airspace restrictions for area <ID>."),
 		func = function(name, param)
@@ -126,7 +126,9 @@ local function remove_physics_overrides(player)
 		pova.do_override(player)
 	else
 		local def = player:get_physics_override()
-		if player_physics_overrides[player_name] and player_physics_overrides[player_name].physics and player_physics_overrides[player_name].deltas then
+		if player_physics_overrides[player_name] 
+			and player_physics_overrides[player_name].physics 
+			and player_physics_overrides[player_name].deltas then
 			-- Subtract total delta from current values
 			player:set_physics_override({
 				speed = def.speed - player_physics_overrides[player_name].deltas.speed,
@@ -159,11 +161,11 @@ local function can_fly(pos, name)
 end
 
 local function safe_node_below(pos)
-	local node = core.get_node_or_nil(vector.new(pos.x, pos.y - 0.5, pos.z))
+	local node = minetest.get_node_or_nil(vector.new(pos.x, pos.y - 0.5, pos.z))
 	if not node then
 		return false
 	end
-	local def = core.registered_nodes[node.name]
+	local def = minetest.registered_nodes[node.name]
 	if def and (def.walkable or (def.liquidtype ~= "none" and def.damage_per_second <= 0)) then
 		return true
 	end
@@ -171,7 +173,7 @@ local function safe_node_below(pos)
 end
 
 local function shoot_flak_sound(pos)
-	core.sound_play("hangglider_flak_shot", {
+	minetest.sound_play("hangglider_flak_shot", {
 		pos = pos,
 		max_hear_distance = 30,
 		gain = 10.0,
@@ -213,7 +215,7 @@ local function hangglider_step(self, dtime)
 				if not self.flak_timer then
 					self.flak_timer = 0
 					shoot_flak_sound(pos)
-					core.chat_send_player(name, flak_warning)
+					minetest.chat_send_player(name, flak_warning)
 				else
 					self.flak_timer = self.flak_timer + dtime
 				end
@@ -244,8 +246,8 @@ local function hangglider_use(stack, player)
 	local pos = player:get_pos()
 	local name = player:get_player_name()
 	if not hanggliding_players[name] then
-		core.sound_play("hanggliger_equip", {pos = pos, max_hear_distance = 8, gain = 1.0}, true)
-		local entity = core.add_entity(pos, "hangglider:glider")
+		minetest.sound_play("hanggliger_equip", {pos = pos, max_hear_distance = 8, gain = 1.0}, true)
+		local entity = minetest.add_entity(pos, "hangglider:glider")
 		if entity then
 			entity:set_attach(player, "", vector.new(0, 10, 0), vector.new(0, 0, 0))
 			local color = stack:get_meta():get("hangglider_color")
@@ -269,20 +271,20 @@ local function hangglider_use(stack, player)
 	end
 end
 
-core.register_on_dieplayer(function(player)
+minetest.register_on_dieplayer(function(player)
 	local name = player:get_player_name()
 	hanggliding_players[name] = nil
 	remove_physics_overrides(player)
 end)
 
-core.register_on_leaveplayer(function(player)
+minetest.register_on_leaveplayer(function(player)
 	local name = player:get_player_name()
 	hanggliding_players[name] = nil
 	hud_overlay_ids[name] = nil
 	remove_physics_overrides(player)
 end)
 
-core.register_on_player_hpchange(function(player, hp_change, reason)
+minetest.register_on_player_hpchange(function(player, hp_change, reason)
 	local name = player:get_player_name()
 	if hanggliding_players[name] and reason.type == "fall" then
 		-- Stop all fall damage when hanggliding
@@ -291,7 +293,7 @@ core.register_on_player_hpchange(function(player, hp_change, reason)
 	return hp_change
 end, true)
 
-core.register_entity("hangglider:glider", {
+minetest.register_entity("hangglider:glider", {
 	visual = "mesh",
 	visual_size = {x = 12, y = 12},
 	collisionbox = {0,0,0,0,0,0},
@@ -302,11 +304,11 @@ core.register_entity("hangglider:glider", {
 	on_step = hangglider_step,
 })
 
-core.register_tool("hangglider:hangglider", {
+minetest.register_tool("hangglider:hangglider", {
 	description = S("Glider"),
 	inventory_image = "hangglider_item.png",
 	sound = {breaks = "default_tool_breaks"},
 	on_use = hangglider_use,
 })
 
-dofile(core.get_modpath("hangglider").."/crafts.lua")
+dofile(minetest.get_modpath("hangglider").."/crafts.lua")
