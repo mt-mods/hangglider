@@ -44,7 +44,7 @@ if enable_flak then
 	})
 end
 
-local function is_gliding(player) then
+local function is_gliding(player)
 	return hanggliding_players[player:get_player_name()]
 end
 
