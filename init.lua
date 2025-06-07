@@ -126,14 +126,14 @@ local function remove_physics_overrides(player)
 		pova.do_override(player)
 	else
 		local def = player:get_physics_override()
-		if player_physics_overrides[player_name].physics and player_physics_overrides[player_name].deltas then
-		-- Subtract total delta from current values
-		player:set_physics_override({
-			speed = def.speed - player_physics_overrides[player_name].deltas.speed,
-			jump = def.jump - player_physics_overrides[player_name].deltas.jump,
-			gravity = def.gravity - player_physics_overrides[player_name].deltas.gravity,
-		})
-		player_physics_overrides[player_name] = nil
+		if player_physics_overrides[player_name] and player_physics_overrides[player_name].physics and player_physics_overrides[player_name].deltas then
+			-- Subtract total delta from current values
+			player:set_physics_override({
+				speed = def.speed - player_physics_overrides[player_name].deltas.speed,
+				jump = def.jump - player_physics_overrides[player_name].deltas.jump,
+				gravity = def.gravity - player_physics_overrides[player_name].deltas.gravity,
+			})
+			player_physics_overrides[player_name] = nil
 		else
 			player:set_physics_override({speed = 1, jump = 1, gravity = 1})
 		end
