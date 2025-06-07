@@ -44,7 +44,7 @@ if enable_flak then
 	})
 end
 
-hangglider.is_gliding = function(player)
+ function hangglider.is_gliding(player)
 	if not player then
 		return false
 	end
