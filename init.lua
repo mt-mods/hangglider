@@ -45,7 +45,7 @@ if enable_flak then
 end
 
 hangglider.is_gliding = function(player)
-	if not player return false end
+	if not player then return false end
 	return hanggliding_players[player:get_player_name()]
 end
 
@@ -70,37 +70,37 @@ local function set_hud_overlay(player, name, show)
 end
 
 local function set_physics_overrides(player, overrides)
-	local name = player:get_player_name()
+	local player_name = player:get_player_name()
 	if has_player_monoids then
 		for name, value in pairs(overrides) do
 			player_monoids[name]:add_change(player, value, "hangglider:glider")
 		end
 	elseif has_pova then
-		pova.add_override(player:get_player_name(), "hangglider:glider",
+		pova.add_override(player_name, "hangglider:glider",
 				{jump = 0, speed = overrides.speed, gravity = overrides.gravity})
 		pova.do_override(player)
 	else
     		local def = player:get_physics_override()
     		-- Store original only once (when glider is equipped)
-    		if not stored_physics[name] then
-        		stored_physics[name] = {
+    		if not stored_physics[player_name] then
+        		stored_physics[player_name] = {
             			speed = def.speed,
             			jump = def.jump,
             			gravity = def.gravity,
         		}
-        		applied_deltas[name] = {speed = 0, jump = 0, gravity = 0}
+        		applied_deltas[player_name] = {speed = 0, jump = 0, gravity = 0}
     		end
-    		-- Compute the new delta you want to apply (relative to current physics)
+    		-- Compute the new delta to apply (relative to current physics)
     		local delta = {
         		speed = (overrides.speed or def.speed) - def.speed,
         		jump = (overrides.jump or def.jump) - def.jump,
         		gravity = (overrides.gravity or def.gravity) - def.gravity,
     		}
-    		-- Track the sum of all deltas you have applied for this session
-    		applied_deltas[name].speed = applied_deltas[name].speed + delta.speed
-    		applied_deltas[name].jump = applied_deltas[name].jump + delta.jump
-    		applied_deltas[name].gravity = applied_deltas[name].gravity + delta.gravity
-    		-- Apply your new delta on top of current physics
+    		-- Track the sum of all deltas for this session.
+    		applied_deltas[player_name].speed = applied_deltas[player_name].speed + delta.speed
+    		applied_deltas[player_name].jump = applied_deltas[player_name].jump + delta.jump
+    		applied_deltas[player_name].gravity = applied_deltas[player_name].gravity + delta.gravity
+    		-- Apply new delta on top of current physics
     		player:set_physics_override({
         		speed = def.speed + delta.speed,
         		jump = def.jump + delta.jump,
@@ -110,25 +110,25 @@ local function set_physics_overrides(player, overrides)
 end
 
 local function remove_physics_overrides(player)
-	local name = player:get_player_name()
+	local player_name = player:get_player_name()
 	if has_player_monoids then
 		for _, name in pairs({"jump", "speed", "gravity"}) do
 			player_monoids[name]:del_change(player, "hangglider:glider")
 		end
 	elseif has_pova then
-		pova.del_override(player:get_player_name(), "hangglider:glider")
+		pova.del_override(player_name, "hangglider:glider")
 		pova.do_override(player)
 	else
 		local def = player:get_physics_override()
-    		if stored_physics[name] and applied_deltas[name] then
-        		-- Subtract your total delta from current values
+    		if stored_physics[player_name] and applied_deltas[player_name] then
+        		-- Subtract total delta from current values
         		player:set_physics_override({
-            			speed = def.speed - applied_deltas[name].speed,
-            			jump = def.jump - applied_deltas[name].jump,
-            			gravity = def.gravity - applied_deltas[name].gravity,
+            			speed = def.speed - applied_deltas[player_name].speed,
+            			jump = def.jump - applied_deltas[player_name].jump,
+            			gravity = def.gravity - applied_deltas[player_name].gravity,
         		})
-        		stored_physics[name] = nil
-        		applied_deltas[name] = nil
+        		stored_physics[player_name] = nil
+        		applied_deltas[player_name] = nil
     		else
         		player:set_physics_override({speed = 1, jump = 1, gravity = 1})
     		end
