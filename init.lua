@@ -63,45 +63,54 @@ local function set_hud_overlay(player, name, show)
 	end
 end
 
+-- Revised set_physics_overrides
 local function set_physics_overrides(player, overrides)
+	local name = player:get_player_name()
 	if has_player_monoids then
-		for name, value in pairs(overrides) do
-			player_monoids[name]:add_change(player, value, "hangglider:glider")
+		for pname, value in pairs(overrides) do
+			player_monoids[pname]:add_change(player, value, "hangglider:glider")
 		end
 	elseif has_pova then
-		pova.add_override(player:get_player_name(), "hangglider:glider",
-				{jump = 0, speed = overrides.speed, gravity = overrides.gravity})
+		pova.add_override(name, "hangglider:glider", {
+			jump = overrides.jump or 1.0,
+			speed = overrides.speed or 1.0,
+			gravity = overrides.gravity or 1.0,
+		})
 		pova.do_override(player)
-	else	
+	else
 		local def = player:get_physics_override()
-		if not def then return end
-		local name = player:get_player_name()
 		if not stored_physics[name] then
-			stored_physics[name] = {speed = 0,jump = 0, gravity = 0}
+			stored_physics[name] = {
+				speed = def.speed,
+				jump = def.jump,
+				gravity = def.gravity,
+			}
 		end
-		stored_physics[name].speed = overrides.speed - 1.0
-		stored_physics[name].jump =  overrides.jump - 1.0
-		stored_physics[name].gravity = overrides.gravity - 1.0
 		player:set_physics_override({
-			speed = def.speed + stored_physics[name].speed,
-			jump = def.jump + stored_physics[name].jump,
-			gravity = def.gravity + stored_physics[name].gravity,
+			speed = overrides.speed or def.speed,
+			jump = overrides.jump or def.jump,
+			gravity = overrides.gravity or def.gravity,
 		})
 	end
 end
 
+-- Revised remove_physics_overrides
 local function remove_physics_overrides(player)
+	local name = player:get_player_name()
 	if has_player_monoids then
-		for _, name in pairs({"jump", "speed", "gravity"}) do
-			player_monoids[name]:del_change(player, "hangglider:glider")
+		for _, pname in pairs({"jump", "speed", "gravity"}) do
+			player_monoids[pname]:del_change(player, "hangglider:glider")
 		end
 	elseif has_pova then
-		pova.del_override(player:get_player_name(), "hangglider:glider")
+		pova.del_override(name, "hangglider:glider")
 		pova.do_override(player)
 	else
-		local def = player:get_physics_override()
-		if not def then return end
-		player:set_physics_override({jump = 1, speed = 1, gravity = 1})
+		if stored_physics[name] then
+			player:set_physics_override(stored_physics[name])
+			stored_physics[name] = nil
+		else
+			player:set_physics_override({jump = 1, speed = 1, gravity = 1})
+		end
 	end
 end
 
