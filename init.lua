@@ -18,6 +18,7 @@ local flak_warning = S("You have entered restricted airspace!@n"
 	flak_warning_time)
 
 local hanggliding_players = {}
+local stored_physics = {}
 local hud_overlay_ids = {}
 
 if enable_flak then
@@ -71,8 +72,21 @@ local function set_physics_overrides(player, overrides)
 		pova.add_override(player:get_player_name(), "hangglider:glider",
 				{jump = 0, speed = overrides.speed, gravity = overrides.gravity})
 		pova.do_override(player)
-	else
-		player:set_physics_override(overrides)
+	else	
+		local def = player:get_physics_override()
+		if not def then return end
+		local name = player:get_player_name()
+		if not stored_physics[name] then
+			stored_physics[name] = {speed = 0,jump = 0, gravity = 0}
+		end
+		stored_physics[name].speed = overrides.speed - 1.0
+		stored_physics[name].jump =  overrides.jump - 1.0
+		stored_physics[name].gravity = overrides.gravity - 1.0
+		player:set_physics_override({
+			speed = def.speed + stored_physics[name].speed,
+			jump = def.jump + stored_physics[name].jump,
+			gravity = def.gravity + stored_physics[name].gravity,
+		})
 	end
 end
 
@@ -85,6 +99,8 @@ local function remove_physics_overrides(player)
 		pova.del_override(player:get_player_name(), "hangglider:glider")
 		pova.do_override(player)
 	else
+		local def = player:get_physics_override()
+		if not def then return end
 		player:set_physics_override({jump = 1, speed = 1, gravity = 1})
 	end
 end
