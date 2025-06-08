@@ -18,7 +18,7 @@ local flak_warning = S("You have entered restricted airspace!@n"
 	flak_warning_time)
 
 local hanggliding_players = {}
-local player_physics_overrides = {}
+local physics_overrides = {}
 
 local hud_overlay_ids = {}
 
@@ -85,8 +85,8 @@ local function set_physics_overrides(player, overrides)
 	else
 		local def = player:get_physics_override()
 		if not has_pova or not has_player_monoids then
-			if not player_physics_overrides[player_name] then
-				player_physics_overrides[player_name] = {
+			if not physics_overrides[player_name] then
+				physics_overrides[player_name] = {
 					physics = {
 						speed = def.speed,
 						jump = def.jump,
@@ -103,9 +103,9 @@ local function set_physics_overrides(player, overrides)
 			gravity = (overrides.gravity or def.gravity) - def.gravity,
 		}
 		-- Track the sum of all deltas for this session.
-		player_physics_overrides[player_name].deltas.speed = player_physics_overrides[player_name].deltas.speed + delta.speed
-		player_physics_overrides[player_name].deltas.jump = player_physics_overrides[player_name].deltas.jump + delta.jump
-		player_physics_overrides[player_name].deltas.gravity = player_physics_overrides[player_name].deltas.gravity + delta.gravity
+		physics_overrides[player_name].deltas.speed = physics_overrides[player_name].deltas.speed + delta.speed
+		physics_overrides[player_name].deltas.jump = physics_overrides[player_name].deltas.jump + delta.jump
+		physics_overrides[player_name].deltas.gravity = physics_overrides[player_name].deltas.gravity + delta.gravity
 		-- Apply new delta on top of current physics
 		player:set_physics_override({
 			speed = def.speed + delta.speed,
@@ -126,16 +126,16 @@ local function remove_physics_overrides(player)
 		pova.do_override(player)
 	else
 		local def = player:get_physics_override()
-		if player_physics_overrides[player_name] 
-			and player_physics_overrides[player_name].physics 
-			and player_physics_overrides[player_name].deltas then
+		if physics_overrides[player_name] 
+			and physics_overrides[player_name].physics 
+			and physics_overrides[player_name].deltas then
 			-- Subtract total delta from current values
 			player:set_physics_override({
-				speed = def.speed - player_physics_overrides[player_name].deltas.speed,
-				jump = def.jump - player_physics_overrides[player_name].deltas.jump,
-				gravity = def.gravity - player_physics_overrides[player_name].deltas.gravity,
+				speed = def.speed - physics_overrides[player_name].deltas.speed,
+				jump = def.jump - physics_overrides[player_name].deltas.jump,
+				gravity = def.gravity - physics_overrides[player_name].deltas.gravity,
 			})
-			player_physics_overrides[player_name] = nil
+			physics_overrides[player_name] = nil
 		else
 			player:set_physics_override({speed = 1, jump = 1, gravity = 1})
 		end
