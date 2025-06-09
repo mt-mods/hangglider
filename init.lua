@@ -58,7 +58,7 @@ local function set_hud_overlay(player, name, show)
 	end
 	if not hud_overlay_ids[name] and show == true then
 		hud_overlay_ids[name] = player:hud_add({
-			hud_elem_type = "image",
+			type = "image",
 			text = "hangglider_overlay.png",
 			position = {x = 0, y = 0},
 			scale = {x = -100, y = -100},
@@ -294,13 +294,15 @@ minetest.register_on_player_hpchange(function(player, hp_change, reason)
 end, true)
 
 minetest.register_entity("hangglider:glider", {
-	visual = "mesh",
-	visual_size = {x = 12, y = 12},
-	collisionbox = {0,0,0,0,0,0},
-	mesh = "hangglider.obj",
-	immortal = true,
-	static_save = false,
-	textures = {"wool_white.png", "default_wood.png"},
+	initial_properties = {
+		visual = "mesh",
+		visual_size = {x = 12, y = 12},
+		collisionbox = {0,0,0,0,0,0},
+		mesh = "hangglider.obj",
+		textures = {"wool_white.png", "default_wood.png"},
+		immortal = true,
+		static_save = false,
+	},
 	on_step = hangglider_step,
 })
 
