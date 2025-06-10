@@ -4,7 +4,7 @@ globals = {
 }
 
 read_globals = {
-	"minetest",
+	"core", "minetest",
 	"vector", "ItemStack",
 
 	"player_monoids",
