@@ -126,8 +126,8 @@ local function remove_physics_overrides(player)
 		pova.do_override(player)
 	else
 		local def = player:get_physics_override()
-		if physics_overrides[player_name] 
-			and physics_overrides[player_name].physics 
+		if physics_overrides[player_name]
+			and physics_overrides[player_name].physics
 			and physics_overrides[player_name].deltas then
 			-- Subtract total delta from current values
 			player:set_physics_override({
