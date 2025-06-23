@@ -19,7 +19,6 @@ local flak_warning = S("You have entered restricted airspace!@n"
 
 local hanggliding_players = {}
 local physics_overrides = {}
-
 local hud_overlay_ids = {}
 
 
@@ -45,7 +44,7 @@ if enable_flak then
 	})
 end
 
- function hangglider.is_gliding(player)
+function hangglider.is_gliding(player)
 	if not player then
 		return false
 	end
@@ -58,7 +57,7 @@ local function set_hud_overlay(player, name, show)
 	end
 	if not hud_overlay_ids[name] and show == true then
 		hud_overlay_ids[name] = player:hud_add({
-			type = "image",
+			[minetest.features.hud_def_type_field and "type" or "hud_elem_type"] = "image",
 			text = "hangglider_overlay.png",
 			position = {x = 0, y = 0},
 			scale = {x = -100, y = -100},
@@ -84,17 +83,15 @@ local function set_physics_overrides(player, overrides)
 		pova.do_override(player)
 	else
 		local def = player:get_physics_override()
-		if not has_pova or not has_player_monoids then
-			if not physics_overrides[player_name] then
-				physics_overrides[player_name] = {
-					physics = {
-						speed = def.speed,
-						jump = def.jump,
-						gravity = def.gravity,
-					},
-					deltas = { speed = 0, jump = 0, gravity = 0 },
-				}
-			end
+		if not physics_overrides[player_name] then
+			physics_overrides[player_name] = {
+				physics = {
+					speed = def.speed,
+					jump = def.jump,
+					gravity = def.gravity,
+				},
+				deltas = {speed = 0, jump = 0, gravity = 0},
+			}
 		end
 		-- Compute the new delta to apply (relative to current physics)
 		local delta = {
@@ -129,6 +126,7 @@ local function remove_physics_overrides(player)
 		if physics_overrides[player_name]
 			and physics_overrides[player_name].physics
 			and physics_overrides[player_name].deltas then
+
 			-- Subtract total delta from current values
 			player:set_physics_override({
 				speed = def.speed - physics_overrides[player_name].deltas.speed,
