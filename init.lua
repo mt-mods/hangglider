@@ -18,7 +18,10 @@ local flak_warning = S("You have entered restricted airspace!@n"
 	flak_warning_time)
 
 local hanggliding_players = {}
+local physics_overrides = {}
+
 local hud_overlay_ids = {}
+
 
 if enable_flak then
 	minetest.register_chatcommand("area_flak", {
@@ -42,13 +45,20 @@ if enable_flak then
 	})
 end
 
+ function hangglider.is_gliding(player)
+	if not player then
+		return false
+	end
+	return hanggliding_players[player:get_player_name()]
+end
+
 local function set_hud_overlay(player, name, show)
 	if not enable_hud_overlay then
 		return
 	end
 	if not hud_overlay_ids[name] and show == true then
 		hud_overlay_ids[name] = player:hud_add({
-			hud_elem_type = "image",
+			type = "image",
 			text = "hangglider_overlay.png",
 			position = {x = 0, y = 0},
 			scale = {x = -100, y = -100},
@@ -63,29 +73,72 @@ local function set_hud_overlay(player, name, show)
 end
 
 local function set_physics_overrides(player, overrides)
+	local player_name = player:get_player_name()
 	if has_player_monoids then
 		for name, value in pairs(overrides) do
 			player_monoids[name]:add_change(player, value, "hangglider:glider")
 		end
 	elseif has_pova then
-		pova.add_override(player:get_player_name(), "hangglider:glider",
+		pova.add_override(player_name, "hangglider:glider",
 				{jump = 0, speed = overrides.speed, gravity = overrides.gravity})
 		pova.do_override(player)
 	else
-		player:set_physics_override(overrides)
+		local def = player:get_physics_override()
+		if not has_pova or not has_player_monoids then
+			if not physics_overrides[player_name] then
+				physics_overrides[player_name] = {
+					physics = {
+						speed = def.speed,
+						jump = def.jump,
+						gravity = def.gravity,
+					},
+					deltas = { speed = 0, jump = 0, gravity = 0 },
+				}
+			end
+		end
+		-- Compute the new delta to apply (relative to current physics)
+		local delta = {
+			speed = (overrides.speed or def.speed) - def.speed,
+			jump = (overrides.jump or def.jump) - def.jump,
+			gravity = (overrides.gravity or def.gravity) - def.gravity,
+		}
+		-- Track the sum of all deltas for this session.
+		physics_overrides[player_name].deltas.speed = physics_overrides[player_name].deltas.speed + delta.speed
+		physics_overrides[player_name].deltas.jump = physics_overrides[player_name].deltas.jump + delta.jump
+		physics_overrides[player_name].deltas.gravity = physics_overrides[player_name].deltas.gravity + delta.gravity
+		-- Apply new delta on top of current physics
+		player:set_physics_override({
+			speed = def.speed + delta.speed,
+			jump = def.jump + delta.jump,
+			gravity = def.gravity + delta.gravity,
+		})
 	end
 end
 
 local function remove_physics_overrides(player)
+	local player_name = player:get_player_name()
 	if has_player_monoids then
 		for _, name in pairs({"jump", "speed", "gravity"}) do
 			player_monoids[name]:del_change(player, "hangglider:glider")
 		end
 	elseif has_pova then
-		pova.del_override(player:get_player_name(), "hangglider:glider")
+		pova.del_override(player_name, "hangglider:glider")
 		pova.do_override(player)
 	else
-		player:set_physics_override({jump = 1, speed = 1, gravity = 1})
+		local def = player:get_physics_override()
+		if physics_overrides[player_name]
+			and physics_overrides[player_name].physics
+			and physics_overrides[player_name].deltas then
+			-- Subtract total delta from current values
+			player:set_physics_override({
+				speed = def.speed - physics_overrides[player_name].deltas.speed,
+				jump = def.jump - physics_overrides[player_name].deltas.jump,
+				gravity = def.gravity - physics_overrides[player_name].deltas.gravity,
+			})
+			physics_overrides[player_name] = nil
+		else
+			player:set_physics_override({speed = 1, jump = 1, gravity = 1})
+		end
 	end
 end
 
@@ -241,13 +294,15 @@ minetest.register_on_player_hpchange(function(player, hp_change, reason)
 end, true)
 
 minetest.register_entity("hangglider:glider", {
-	visual = "mesh",
-	visual_size = {x = 12, y = 12},
-	collisionbox = {0,0,0,0,0,0},
-	mesh = "hangglider.obj",
-	immortal = true,
-	static_save = false,
-	textures = {"wool_white.png", "default_wood.png"},
+	initial_properties = {
+		visual = "mesh",
+		visual_size = {x = 12, y = 12},
+		collisionbox = {0,0,0,0,0,0},
+		mesh = "hangglider.obj",
+		textures = {"wool_white.png", "default_wood.png"},
+		immortal = true,
+		static_save = false,
+	},
 	on_step = hangglider_step,
 })
 
