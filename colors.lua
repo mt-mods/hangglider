@@ -1,7 +1,7 @@
 local S = hangglider.translator
 local module = {}
 
-local has_unifieddyes = minetest.get_modpath("unifieddyes")
+local has_unifieddyes = core.get_modpath("unifieddyes")
 local dye_prefix_pattern_universal = "^.*dyes?:" -- Known dye prefix matches: dyes, mcl_dyes, mcl_dye, fl_dyes.
 local dye_suffix_pattern_farlands  = "_dye$"     -- A suffix appended to dye names in the Farlands game.
 

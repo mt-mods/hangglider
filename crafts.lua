@@ -6,7 +6,7 @@ local repair_percentage = 100
 
 
 -- Placeholder repairing recipes (Doesn't directly apply repair, see handler)
-minetest.register_craft({
+core.register_craft({
 	output = "hangglider:hangglider",
 	recipe = {
 		{xcompat.materials.paper, xcompat.materials.paper, xcompat.materials.paper},
@@ -15,7 +15,7 @@ minetest.register_craft({
 	},
 })
 
-minetest.register_craft({
+core.register_craft({
 	output = "hangglider:hangglider",
 	recipe = {"hangglider:hangglider", "group:wool"},
 	type = "shapeless",
@@ -25,7 +25,7 @@ minetest.register_craft({
 do
 	local item = ItemStack("hangglider:hangglider")
 	item:get_meta():set_string("description", S("Colored Glider"))
-	minetest.register_craft({
+	core.register_craft({
 		output = item:to_string(),
 		recipe = {"hangglider:hangglider", "group:dye"},
 		type = "shapeless",
@@ -48,12 +48,12 @@ local function crafting_callback_handle_placeholder_recipe(crafted_item, _, old_
 			wear       = stack:get_wear()
 			color      = stack:get_meta():get("hangglider_color")
 			color_name = colors.get_color_name_from_color(color)
-		elseif minetest.get_item_group(name, "dye") ~= 0 then
+		elseif core.get_item_group(name, "dye") ~= 0 then
 			dye_name = name
 		else
 			for _,repair_item in ipairs(repair_items) do
 				if name == repair_item
-					or minetest.get_item_group(name, string.match(repair_item, "^group:(.*)$")) ~= 0
+					or core.get_item_group(name, string.match(repair_item, "^group:(.*)$")) ~= 0
 				then
 					repaired = true
 				end
@@ -88,11 +88,11 @@ local function crafting_callback_handle_placeholder_recipe(crafted_item, _, old_
 	end
 end
 -- Register handler as a callback for any crafting action
-minetest.register_on_craft(crafting_callback_handle_placeholder_recipe)
+core.register_on_craft(crafting_callback_handle_placeholder_recipe)
 
 
 -- Hangglider recipe
-minetest.register_craft({
+core.register_craft({
 	output = "hangglider:hangglider",
 	recipe = {
 		{"group:wool", "group:wool", "group:wool"},
