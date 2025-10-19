@@ -13,3 +13,8 @@ read_globals = {
 	"unifieddyes",
 	"xcompat",
 }
+
+ignore = {
+	"541", -- Empty "do end" block warning
+}
+
