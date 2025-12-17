@@ -1,11 +1,9 @@
-
 hangglider = {
 	translator = core.get_translator('hangglider'),
 }
 local S = hangglider.translator
-
-local has_player_monoids = core.get_modpath("player_monoids")
-local has_pova = core.get_modpath("pova")
+local id_glider = "hangglider:glider"
+local id_hangglider = "hangglider:hangglider"
 local has_areas = core.get_modpath("areas")
 
 local enable_hud_overlay = core.settings:get_bool("hangglider.enable_hud_overlay", true)
@@ -21,6 +19,106 @@ local hanggliding_players = {}
 local physics_overrides = {}
 local hud_overlay_ids = {}
 
+local function check_physics_engine()
+    if core.get_modpath("pova") then
+        return "pova"
+    elseif core.get_modpath("player_monoids") then
+        return "monoids"
+    end
+end
+
+local physics = check_physics_engine()
+
+-- Empty functions
+local set_physics_overrides
+local remove_physics_overrides
+
+-- Filling functions with the proper physics logic.
+local function make_builtin_overrides()
+    return {
+        set = function(player, overrides)
+            local name = player:get_player_name()
+            local def = player:get_physics_override()
+
+            physics_overrides[name] = physics_overrides[name] or {
+                base   = { speed = def.speed, jump = def.jump, gravity = def.gravity },
+                deltas = { speed = 0, jump = 0, gravity = 0 },
+            }
+
+            local delta = {
+                speed   = ( overrides.speed or def.speed ) - def.speed,
+                jump    = ( overrides.jump or def.jump ) - def.jump,
+                gravity = ( overrides.gravity or def.gravity ) - def.gravity,
+            }
+
+            for k, v in pairs(delta) do
+                physics_overrides[name].deltas[k] = physics_overrides[name].deltas[k] + v
+            end
+
+            player:set_physics_override({
+                speed   = def.speed + delta.speed,
+                jump    = def.jump + delta.jump,
+                gravity = def.gravity + delta.gravity,
+            })
+        end,
+
+        remove = function(player)
+            local name = player:get_player_name()
+            local def = player:get_physics_override()
+            local ovr = physics_overrides[name]
+
+            if ovr then
+                player:set_physics_override({
+                    speed = def.speed - ovr.deltas.speed,
+                    jump  = def.jump - ovr.deltas.jump,
+                    gravity = def.gravity - ovr.deltas.gravity,
+                })
+                physics_overrides[name] = nil
+			else
+			    player:set_physics_override({ speed = 1, jump = 1, gravity = 1 })
+			end
+
+        end
+    }
+end
+
+local overrides
+
+if physics == "pova" then
+    overrides = {
+        set = function(player, o)
+            local name = player:get_player_name()
+            pova.add_override(name, id_glider, {
+                jump = o.jump or 0,
+                speed = o.speed,
+                gravity = o.gravity,
+            })
+            pova.do_override(player)
+        end,
+        remove = function(player)
+            pova.del_override(player:get_player_name(), id_glider)
+            pova.do_override(player)
+        end,
+    }
+elseif physics == "monoids" then
+    overrides = {
+        set = function(player, o)
+            for k, v in pairs(o) do
+                player_monoids[k]:add_change(player, v, id_glider)
+            end
+        end,
+        remove = function(player)
+            for _, k in ipairs({ "jump", "speed", "gravity" }) do
+                player_monoids[k]:del_change(player, id_glider)
+            end
+        end,
+    }
+else
+    overrides = make_builtin_overrides()
+end
+
+set_physics_overrides = overrides.set
+remove_physics_overrides = overrides.remove
 
 if enable_flak then
 	core.register_chatcommand("area_flak", {
@@ -68,75 +166,6 @@ local function set_hud_overlay(player, name, show)
 	elseif hud_overlay_ids[name] and show == false then
 		player:hud_remove(hud_overlay_ids[name])
 		hud_overlay_ids[name] = nil
-	end
-end
-
-local function set_physics_overrides(player, overrides)
-	local player_name = player:get_player_name()
-	if has_player_monoids then
-		for name, value in pairs(overrides) do
-			player_monoids[name]:add_change(player, value, "hangglider:glider")
-		end
-	elseif has_pova then
-		pova.add_override(player_name, "hangglider:glider",
-				{jump = 0, speed = overrides.speed, gravity = overrides.gravity})
-		pova.do_override(player)
-	else
-		local def = player:get_physics_override()
-		if not physics_overrides[player_name] then
-			physics_overrides[player_name] = {
-				physics = {
-					speed = def.speed,
-					jump = def.jump,
-					gravity = def.gravity,
-				},
-				deltas = {speed = 0, jump = 0, gravity = 0},
-			}
-		end
-		-- Compute the new delta to apply (relative to current physics)
-		local delta = {
-			speed = (overrides.speed or def.speed) - def.speed,
-			jump = (overrides.jump or def.jump) - def.jump,
-			gravity = (overrides.gravity or def.gravity) - def.gravity,
-		}
-		-- Track the sum of all deltas for this session.
-		physics_overrides[player_name].deltas.speed = physics_overrides[player_name].deltas.speed + delta.speed
-		physics_overrides[player_name].deltas.jump = physics_overrides[player_name].deltas.jump + delta.jump
-		physics_overrides[player_name].deltas.gravity = physics_overrides[player_name].deltas.gravity + delta.gravity
-		-- Apply new delta on top of current physics
-		player:set_physics_override({
-			speed = def.speed + delta.speed,
-			jump = def.jump + delta.jump,
-			gravity = def.gravity + delta.gravity,
-		})
-	end
-end
-
-local function remove_physics_overrides(player)
-	local player_name = player:get_player_name()
-	if has_player_monoids then
-		for _, name in pairs({"jump", "speed", "gravity"}) do
-			player_monoids[name]:del_change(player, "hangglider:glider")
-		end
-	elseif has_pova then
-		pova.del_override(player_name, "hangglider:glider")
-		pova.do_override(player)
-	else
-		local def = player:get_physics_override()
-		if physics_overrides[player_name]
-			and physics_overrides[player_name].physics
-			and physics_overrides[player_name].deltas then
-
-			-- Subtract total delta from current values
-			player:set_physics_override({
-				speed = def.speed - physics_overrides[player_name].deltas.speed,
-				jump = def.jump - physics_overrides[player_name].deltas.jump,
-				gravity = def.gravity - physics_overrides[player_name].deltas.gravity,
-			})
-			physics_overrides[player_name] = nil
-		else
-			player:set_physics_override({speed = 1, jump = 1, gravity = 1})
-		end
 	end
 end
 
@@ -219,7 +248,7 @@ local function hangglider_step(self, dtime)
 				end
 				if self.flak_timer > flak_warning_time then
 					player:set_hp(1, {type = "set_hp", cause = "hangglider:flak"})
-					player:get_inventory():remove_item("main", ItemStack("hangglider:hangglider"))
+					player:get_inventory():remove_item("main", ItemStack(id_hangglider))
 					shoot_flak_sound(pos)
 					gliding = false
 				end
@@ -245,7 +274,7 @@ local function hangglider_use(stack, player)
 	local name = player:get_player_name()
 	if not hanggliding_players[name] then
 		core.sound_play("hanggliger_equip", {pos = pos, max_hear_distance = 8, gain = 1.0}, true)
-		local entity = core.add_entity(pos, "hangglider:glider")
+		local entity = core.add_entity(pos, id_glider)
 		if entity then
 			entity:set_attach(player, "", vector.new(0, 10, 0), vector.new(0, 0, 0))
 			local color = stack:get_meta():get("hangglider_color")
@@ -285,13 +314,12 @@ end)
 core.register_on_player_hpchange(function(player, hp_change, reason)
 	local name = player:get_player_name()
 	if hanggliding_players[name] and reason.type == "fall" then
-		-- Stop all fall damage when hanggliding
 		return 0, true
 	end
 	return hp_change
 end, true)
 
-core.register_entity("hangglider:glider", {
+core.register_entity(id_glider, {
 	initial_properties = {
 		visual = "mesh",
 		visual_size = {x = 12, y = 12},
@@ -304,7 +332,7 @@ core.register_entity("hangglider:glider", {
 	on_step = hangglider_step,
 })
 
-core.register_tool("hangglider:hangglider", {
+core.register_tool(id_hangglider, {
 	description = S("Glider"),
 	inventory_image = "hangglider_item.png",
 	sound = {breaks = "default_tool_breaks"},
